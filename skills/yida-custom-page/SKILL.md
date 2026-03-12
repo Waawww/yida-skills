@@ -1,6 +1,6 @@
 ---
 name: yida-custom-page
-description: 宜搭自定义页面开发技能，包含宜搭表单 JS API 调用（增删改查/流程/工具类共 27 个）、React 16 JSX 组件开发规范、状态管理模式与编码约束。
+description: 宜搭自定义页面开发技能，包含跨应用数据 API、页面运行时 JS API、React 16 JSX 开发规范、状态管理模式与编码约束。
 license: MIT
 compatibility:
   - opencode
@@ -24,7 +24,8 @@ metadata:
 
 | 能力 | 说明 |
 | --- | --- |
-| **表单数据操作** | 通过宜搭前端 JS API（`this.utils.yida.*`）对表单数据进行增删改查 |
+| **表单与流程数据操作** | 通过 `this.utils.yida.*` 对表单实例、流程实例进行查询与写入 |
+| **页面运行时控制** | 通过 `this.state`、`this.utils.*`、`this.$(fieldId).*` 控制页面状态、组件、路由与弹窗 |
 | **JSX 组件开发** | 编写 React 16 兼容的 JSX 代码，实现个性化定制页面 |
 | **AI 能力集成** | 调用大模型 AI 接口（`/query/intelligent/txtFromAI.json`）实现智能文本生成 |
 | **自动编译部署** | 通过工具链将源码编译、压缩，并自动合并到宜搭 Schema 中保存 |
@@ -36,6 +37,32 @@ metadata:
 - 用户需要实现复杂的页面交互逻辑
 - 用户需要调用宜搭 JS API 进行数据操作
 - 已有自定义页面，需要编写或修改 JSX 代码
+
+## AI 阅读顺序
+
+当 AI 使用本技能时，建议按以下顺序理解与检索信息：
+
+1. 先阅读本 `SKILL.md`，确定任务属于哪一类：
+   - 页面运行时控制
+   - 跨应用数据读写
+   - 自定义页面编码规范
+   - 编译与发布
+2. 再按问题类型查参考文档：
+   - 涉及 `this.utils.yida.*` 的表单/流程数据接口，查 `reference/yida-api.md`
+   - 涉及 `this.state`、`this.utils.*`、`this.utils.router.*`、`this.$(fieldId).*` 的页面运行时 API，查 `reference/yida-js-api.md`
+   - 涉及 AI 文本生成接口，查 `reference/model-api.md`
+3. 编码前优先确认：
+   - 页面是“纯展示页”还是“需要读写表单数据”
+   - 是否需要 iframe 嵌入表单页
+   - 是否需要生命周期逻辑、组件联动或路由跳转
+
+## 文档分工
+
+| 文档 | 作用 | 适用问题 |
+| --- | --- | --- |
+| `reference/yida-api.md` | 跨应用数据 API 参考 | 如何查询、新建、更新、删除表单/流程数据 |
+| `reference/yida-js-api.md` | 页面运行时 JS API 参考 | 如何控制页面状态、组件、路由、弹窗、数据源 |
+| `reference/model-api.md` | AI 接口参考 | 如何调用文案生成相关接口 |
 
 ## 使用示例
 
@@ -309,6 +336,21 @@ if (inputEl) { inputEl.value = ""; }
 
 ## API 参考
 
+在编写代码前，先判断应该查哪一类 API：
+
+- 如果目标是“读写宜搭业务数据”，优先查 `reference/yida-api.md`
+- 如果目标是“控制页面/组件/路由/弹窗”，优先查 `reference/yida-js-api.md`
+- 如果两类都涉及，先确定数据接口，再补页面交互逻辑
+
+### 参考资料使用建议
+
+| 任务类型 | 优先参考 |
+| --- | --- |
+| 新建、更新、删除、搜索表单数据 | `reference/yida-api.md` |
+| 发起、查询、更新流程实例 | `reference/yida-api.md` |
+| 页面状态、组件赋值、校验、隐藏、只读 | `reference/yida-js-api.md` |
+| 打开弹窗、轻提示、跳转页面、读取 URL 参数 | `reference/yida-js-api.md` |
+
 ### 表单数据操作
 
 通过 `this.utils.yida.<方法名>(params)` 调用，所有接口返回 Promise。
@@ -388,7 +430,7 @@ this.utils.yida.searchFormDatas({
 | `previewImage` | 图片预览 | 图片查看、多图轮播 |
 | `loadScript` | 动态加载脚本 | 引入第三方库（如二维码生成） |
 
-完整参数说明和示例请参考 [yida-api.md](reference/yida-api.md) 的「工具类 API」章节。 |
+完整参数说明和示例请参考 `reference/yida-js-api.md`。 
 
 ## 工具链
 
@@ -532,7 +574,14 @@ const listUrlWithView = `https://www.aliwork.com/${appType}/workbench/${formUuid
 
 | 文档 | 路径 | 说明 |
 | --- | --- | --- |
-| 宜搭 JS API | `reference/yida-api.md` | 表单数据增删改查（7 个）、流程操作（6 个）、工具类 API（14 个），共 27 个 API 的完整参数与示例 |
+| 宜搭跨应用数据 API | `reference/yida-api.md` | `this.utils.yida.*` 表单与流程数据接口，适合查询、新建、更新、删除业务数据 |
+| 宜搭页面运行时 JS API | `reference/yida-js-api.md` | `this.state`、`this.utils.*`、`this.utils.router.*`、`this.$(fieldId).*` 等页面运行时 API |
 | 大模型 AI 接口 | `reference/model-api.md` | AI 文本生成接口的请求参数、返回值结构与调用示例 |
 | Schema 保存接口 | `reference/save-schema.md` | `saveFormSchema` 接口的请求参数与返回值 |
+
+### 选择参考文档的规则
+
+- 当需求里出现“表单实例”“流程实例”“查询数据”“写入数据”时，优先查 `reference/yida-api.md`
+- 当需求里出现“页面状态”“按钮点击”“组件赋值”“校验”“弹窗”“路由跳转”时，优先查 `reference/yida-js-api.md`
+- 当需要把“数据接口调用”和“页面组件联动”组合起来时，先查 `reference/yida-api.md`，再查 `reference/yida-js-api.md`
 

@@ -1,8 +1,29 @@
-# 宜搭跨应用 JS API
+# 宜搭跨应用数据 API
 
 调用方式：`this.utils.yida.<函数名>(params)`
 
+适用场景：在宜搭自定义页面中跨表单、跨流程查询和写入业务数据。
+
+不包含内容：
+
+- `this.utils.*` 工具类 API
+- `this.utils.router.*` 路由 API
+- `this.state` / `this.setState`
+- `this.dataSourceMap.*`
+- `this.$(fieldId).*` 组件实例 API
+
+上述运行时 API 统一整理在 [yida-js-api.md](./yida-js-api.md) 中，避免重复检索。
+
 所有接口返回 Promise，统一使用 `.then()` 和 `.catch()` 处理结果和异常。
+
+---
+
+## 文档定位
+
+| 文档 | 主要内容 | 适用问题 |
+| :--- | :--- | :--- |
+| `yida-api.md` | `this.utils.yida.*` 表单/流程数据接口 | 需要新建、更新、删除、搜索表单或流程数据 |
+| `yida-js-api.md` | 页面运行时 JS API 与组件 API | 需要控制页面状态、组件、路由、对话框、工具函数 |
 
 ---
 
@@ -10,7 +31,7 @@
 
 - [表单操作类 API](#表单操作类-api)
   - [saveFormData](#saveformdata) - 新建表单实例
-  - [updateFormData](#updateformdata) - 更新表单组件值
+  - [updateFormData](#updateformdata) - 更新表单实例
   - [searchFormDataIds](#searchformdataids) - 搜索表单实例 ID 列表
   - [getFormComponentDefinationList](#getformcomponentdefinationlist) - 获取表单定义
   - [deleteFormData](#deleteformdata) - 删除表单实例
@@ -23,21 +44,6 @@
   - [getProcessInstances](#getprocessinstances) - 获取流程实例详情列表
   - [getProcessInstanceIds](#getprocessinstanceids) - 搜索流程实例 ID 列表
   - [getProcessInstanceById](#getprocessinstancebyid) - 获取流程实例详情
-- [工具类 API](#工具类-api)
-  - [dialog](#dialog) - 对话框
-  - [formatter](#formatter) - 格式化工具
-  - [getDateTimeRange](#getdatetimerange) - 获取日期时间范围
-  - [getLocale](#getlocale) - 获取语言环境
-  - [getLoginUserId](#getloginuserid) - 获取登录用户 ID
-  - [getLoginUserName](#getloginusername) - 获取登录用户名称
-  - [isMobile](#ismobile) - 判断是否移动端
-  - [isSubmissionPage](#issubmissionpage) - 判断是否提交页面
-  - [isViewPage](#isviewpage) - 判断是否查看页面
-  - [loadScript](#loadscript) - 动态加载脚本
-  - [openPage](#openpage) - 打开新页面
-  - [router.push](#router.push) - 页面路由跳转工具
-  - [previewImage](#previewimage) - 图片预览
-  - [toast](#toast) - 信息提醒
 
 ---
 
@@ -45,15 +51,15 @@
 
 ### saveFormData
 
-**描述**：新建表单实例
+**描述**：新建表单实例。
 
 **参数**：
 
 | 参数名 | 类型 | 是否必填 | 描述 | 示例 |
 | :--- | :--- | :--- | :--- | :--- |
-| formUuid | String | 是 | 表单ID | `FORM-XXX` |
+| formUuid | String | 是 | 表单 ID | `FORM-XXX` |
 | appType | String | 是 | 应用 ID | `APP_XXX` |
-| formDataJson | String | 是 | 表单数据（JSON字符串） | `JSON.stringify({ textField_xxx: '值' })` |
+| formDataJson | String | 是 | 表单数据 JSON 字符串 | `JSON.stringify({ textField_xxx: '值' })` |
 
 **formDataJson 示例**：
 
@@ -145,7 +151,7 @@
 | 字段 | 类型 | 描述 |
 | :--- | :--- | :--- |
 | success | Boolean | 请求是否成功 |
-| result | String | 实例ID |
+| result | String | 实例 ID |
 | errorMsg | String | 错误信息 |
 | errorCode | String | 错误码 |
 
@@ -179,14 +185,14 @@ this.utils.yida.saveFormData({
 
 ### updateFormData
 
-**描述**：更新表单中指定组件值
+**描述**：更新表单实例中的指定字段值。
 
 **参数**：
 
 | 参数名 | 类型 | 是否必填 | 描述 | 示例 |
 | :--- | :--- | :--- | :--- | :--- |
-| formInstId | String | 是 | 表单实例ID | `FINST-xxx` |
-| updateFormDataJson | String | 是 | 需要更新的表单数据（JSON字符串） | `JSON.stringify({ textField_xxx: '值' })` |
+| formInstId | String | 是 | 表单实例 ID | `FINST-xxx` |
+| updateFormDataJson | String | 是 | 待更新表单数据 JSON 字符串 | `JSON.stringify({ textField_xxx: '值' })` |
 | useLatestVersion | String | 否 | 是否使用最新版本 | `y` |
 
 **请求示例**：
@@ -200,7 +206,7 @@ this.utils.yida.updateFormData({
   }),
   useLatestVersion: 'y',
 }).then((res) => {
-  console.log('更新成功');
+  console.log('更新成功', res);
 }).catch(({ message }) => {
   this.utils.toast({ title: message, type: 'error' });
 });
@@ -210,16 +216,16 @@ this.utils.yida.updateFormData({
 
 ### searchFormDataIds
 
-**描述**：根据条件搜索表单实例 ID 列表
+**描述**：根据条件搜索表单实例 ID 列表。
 
 **参数**：
 
 | 参数名 | 类型 | 是否必填 | 描述 | 示例 |
 | :--- | :--- | :--- | :--- | :--- |
-| formUuid | String | 是 | 表单ID | `FORM-XXX` |
+| formUuid | String | 是 | 表单 ID | `FORM-XXX` |
 | currentPage | Number | 否 | 当前页，默认 1 | `1` |
 | pageSize | Number | 否 | 每页记录数，默认 10，最大 100 | `10` |
-| searchFieldJson | String | 否 | 根据表单内组件值查询（JSON字符串） | `JSON.stringify({ textField_xxx: '值' })` |
+| searchFieldJson | String | 否 | 查询条件 JSON 字符串 | `JSON.stringify({ textField_xxx: '值' })` |
 
 **请求示例**：
 
@@ -242,13 +248,13 @@ this.utils.yida.searchFormDataIds({
 
 ### getFormComponentDefinationList
 
-**描述**：获取表单定义
+**描述**：获取表单定义。
 
 **参数**：
 
 | 参数名 | 类型 | 是否必填 | 描述 | 示例 |
 | :--- | :--- | :--- | :--- | :--- |
-| formUuid | String | 是 | 表单ID | `FORM-XXX` |
+| formUuid | String | 是 | 表单 ID | `FORM-XXX` |
 | version | String | 否 | 版本号 | `""` |
 
 **请求示例**：
@@ -268,13 +274,13 @@ this.utils.yida.getFormComponentDefinationList({
 
 ### deleteFormData
 
-**描述**：删除表单实例
+**描述**：删除表单实例。
 
 **参数**：
 
 | 参数名 | 类型 | 是否必填 | 描述 | 示例 |
 | :--- | :--- | :--- | :--- | :--- |
-| formUuid | String | 是 | 表单ID | `FORM-XXX` |
+| formUuid | String | 是 | 表单 ID | `FORM-XXX` |
 
 **请求示例**：
 
@@ -292,13 +298,13 @@ this.utils.yida.deleteFormData({
 
 ### getFormDataById
 
-**描述**：根据表单实例 ID 查询表单实例详情
+**描述**：根据表单实例 ID 查询表单实例详情。
 
 **参数**：
 
 | 参数名 | 类型 | 是否必填 | 描述 | 示例 |
 | :--- | :--- | :--- | :--- | :--- |
-| formInstId | String | 是 | 表单实例ID | `FINST-xxxx` |
+| formInstId | String | 是 | 表单实例 ID | `FINST-xxxx` |
 
 **请求示例**：
 
@@ -316,22 +322,22 @@ this.utils.yida.getFormDataById({
 
 ### searchFormDatas
 
-**描述**：根据条件搜索表单实例详情列表
+**描述**：根据条件搜索表单实例详情列表。
 
 **参数**：
 
 | 参数名 | 类型 | 是否必填 | 描述 | 示例 |
 | :--- | :--- | :--- | :--- | :--- |
-| formUuid | String | 是 | 表单ID | `FORM-XXX` |
-| searchFieldJson | String | 否 | 根据表单内组件值查询（JSON字符串） | `JSON.stringify({ textField_xxx: '值' })` |
+| formUuid | String | 是 | 表单 ID | `FORM-XXX` |
+| searchFieldJson | String | 否 | 根据表单组件值查询的 JSON 字符串 | `JSON.stringify({ textField_xxx: '值' })` |
 | currentPage | Number | 否 | 当前页，默认 1 | `1` |
 | pageSize | Number | 否 | 每页记录数，默认 10，最大 100 | `10` |
-| originatorId | String | 否 | 根据数据提交人工号查询 | `'2134'` |
-| createFrom | String | 否 | 创建时间范围起始，格式 yyyy-MM-dd | `'2024-01-01'` |
-| createTo | String | 否 | 创建时间范围结束，格式 yyyy-MM-dd | `'2024-02-01'` |
-| modifiedFrom | String | 否 | 修改时间范围起始，格式 yyyy-MM-dd | `'2024-01-01'` |
-| modifiedTo | String | 否 | 修改时间范围结束，格式 yyyy-MM-dd | `'2024-02-01'` |
-| dynamicOrder | String | 否 | 指定排序字段 | `'{"numberField_1ac":"+"}'` |
+| originatorId | String | 否 | 数据提交人工号 | `'2134'` |
+| createFrom | String | 否 | 创建时间起始，格式 `yyyy-MM-dd` | `'2024-01-01'` |
+| createTo | String | 否 | 创建时间结束，格式 `yyyy-MM-dd` | `'2024-02-01'` |
+| modifiedFrom | String | 否 | 修改时间起始，格式 `yyyy-MM-dd` | `'2024-01-01'` |
+| modifiedTo | String | 否 | 修改时间结束，格式 `yyyy-MM-dd` | `'2024-02-01'` |
+| dynamicOrder | String | 否 | 排序字段 | `'{"numberField_1ac":"+"}'` |
 
 **searchFieldJson 示例**：
 
@@ -443,16 +449,16 @@ this.utils.yida.searchFormDatas({
 
 ### startProcessInstance
 
-**描述**：流程发起
+**描述**：发起流程实例。
 
 **参数**：
 
 | 参数名 | 类型 | 是否必填 | 描述 | 示例 |
 | :--- | :--- | :--- | :--- | :--- |
-| formUuid | String | 是 | 表单ID | `FORM-XXX` |
+| formUuid | String | 是 | 表单 ID | `FORM-XXX` |
 | processCode | String | 是 | 流程编码 | `TPROC--xxx` |
-| deptId | String | 否 | 部门ID | `''` |
-| formDataJson | String | 是 | 表单数据（JSON字符串） | `JSON.stringify({ textField_xxx: '值' })` |
+| deptId | String | 否 | 部门 ID | `''` |
+| formDataJson | String | 是 | 表单数据 JSON 字符串 | `JSON.stringify({ textField_xxx: '值' })` |
 
 **请求示例**：
 
@@ -476,14 +482,14 @@ this.utils.yida.startProcessInstance({
 
 ### updateProcessInstance
 
-**描述**：流程实例更新
+**描述**：更新流程实例数据。
 
 **参数**：
 
 | 参数名 | 类型 | 是否必填 | 描述 | 示例 |
 | :--- | :--- | :--- | :--- | :--- |
-| processInstanceId | String | 是 | 流程实例ID | `f30233fb-xxx-9ee530` |
-| updateFormDataJson | String | 是 | 需要更新的表单数据（JSON字符串） | `JSON.stringify({ textField_xxx: '值' })` |
+| processInstanceId | String | 是 | 流程实例 ID | `f30233fb-xxx-9ee530` |
+| updateFormDataJson | String | 是 | 待更新表单数据 JSON 字符串 | `JSON.stringify({ textField_xxx: '值' })` |
 
 **请求示例**：
 
@@ -505,13 +511,13 @@ this.utils.yida.updateProcessInstance({
 
 ### deleteProcessInstance
 
-**描述**：删除流程实例
+**描述**：删除流程实例。
 
 **参数**：
 
 | 参数名 | 类型 | 是否必填 | 描述 | 示例 |
 | :--- | :--- | :--- | :--- | :--- |
-| processInstanceId | String | 是 | 流程实例ID | `f30233fb-xxx-9ee530` |
+| processInstanceId | String | 是 | 流程实例 ID | `f30233fb-xxx-9ee530` |
 
 **请求示例**：
 
@@ -529,24 +535,24 @@ this.utils.yida.deleteProcessInstance({
 
 ### getProcessInstances
 
-**描述**：根据搜索条件获取流程实例详情列表
+**描述**：根据搜索条件获取流程实例详情列表。
 
 **参数**：
 
 | 参数名 | 类型 | 是否必填 | 描述 | 示例 |
 | :--- | :--- | :--- | :--- | :--- |
-| formUuid | String | 否 | 表单ID | `FORM-XXX` |
-| taskId | String | 否 | 任务ID | `'2199132092'` |
+| formUuid | String | 否 | 表单 ID | `FORM-XXX` |
+| taskId | String | 否 | 任务 ID | `'2199132092'` |
 | instanceStatus | String | 否 | 实例状态 | `'RUNNING'` |
-| approvedResult | String | 否 | 流程审批结果 | `'agree'` |
+| approvedResult | String | 否 | 审批结果 | `'agree'` |
 | currentPage | Number | 否 | 当前页，默认 1 | `1` |
 | pageSize | Number | 否 | 每页记录数，默认 10，最大 100 | `10` |
 | originatorId | String | 否 | 流程发起人工号 | `'2134'` |
-| createFrom | String | 否 | 创建时间范围起始，格式 yyyy-MM-dd | `'2024-01-01'` |
-| createTo | String | 否 | 创建时间范围结束，格式 yyyy-MM-dd | `'2024-02-01'` |
-| modifiedFrom | String | 否 | 修改时间范围起始，格式 yyyy-MM-dd | `'2024-01-01'` |
-| modifiedTo | String | 否 | 修改时间范围结束，格式 yyyy-MM-dd | `'2024-02-01'` |
-| searchFieldJson | String | 否 | 根据表单内组件值查询（JSON字符串） | `JSON.stringify({ textField_xxx: '值' })` |
+| createFrom | String | 否 | 创建时间起始，格式 `yyyy-MM-dd` | `'2024-01-01'` |
+| createTo | String | 否 | 创建时间结束，格式 `yyyy-MM-dd` | `'2024-02-01'` |
+| modifiedFrom | String | 否 | 修改时间起始，格式 `yyyy-MM-dd` | `'2024-01-01'` |
+| modifiedTo | String | 否 | 修改时间结束，格式 `yyyy-MM-dd` | `'2024-02-01'` |
+| searchFieldJson | String | 否 | 表单字段查询条件 JSON 字符串 | `JSON.stringify({ textField_xxx: '值' })` |
 
 **请求示例**：
 
@@ -577,24 +583,24 @@ this.utils.yida.getProcessInstances({
 
 ### getProcessInstanceIds
 
-**描述**：根据条件搜索流程实例 ID 列表
+**描述**：根据条件搜索流程实例 ID 列表。
 
 **参数**：
 
 | 参数名 | 类型 | 是否必填 | 描述 | 示例 |
 | :--- | :--- | :--- | :--- | :--- |
-| formUuid | String | 否 | 表单ID | `FORM-XXX` |
-| taskId | String | 否 | 任务ID | `'2199132092'` |
+| formUuid | String | 否 | 表单 ID | `FORM-XXX` |
+| taskId | String | 否 | 任务 ID | `'2199132092'` |
 | instanceStatus | String | 否 | 实例状态 | `'RUNNING'` |
-| approvedResult | String | 否 | 流程审批结果 | `'agree'` |
+| approvedResult | String | 否 | 审批结果 | `'agree'` |
 | currentPage | Number | 否 | 当前页，默认 1 | `1` |
 | pageSize | Number | 否 | 每页记录数，默认 10，最大 100 | `10` |
 | originatorId | String | 否 | 流程发起人工号 | `'2134'` |
-| createFrom | String | 否 | 创建时间范围起始，格式 yyyy-MM-dd | `'2024-01-01'` |
-| createTo | String | 否 | 创建时间范围结束，格式 yyyy-MM-dd | `'2024-02-01'` |
-| modifiedFrom | String | 否 | 修改时间范围起始，格式 yyyy-MM-dd | `'2024-01-01'` |
-| modifiedTo | String | 否 | 修改时间范围结束，格式 yyyy-MM-dd | `'2024-02-01'` |
-| searchFieldJson | String | 否 | 根据表单内组件值查询（JSON字符串） | `JSON.stringify({ textField_xxx: '值' })` |
+| createFrom | String | 否 | 创建时间起始，格式 `yyyy-MM-dd` | `'2024-01-01'` |
+| createTo | String | 否 | 创建时间结束，格式 `yyyy-MM-dd` | `'2024-02-01'` |
+| modifiedFrom | String | 否 | 修改时间起始，格式 `yyyy-MM-dd` | `'2024-01-01'` |
+| modifiedTo | String | 否 | 修改时间结束，格式 `yyyy-MM-dd` | `'2024-02-01'` |
+| searchFieldJson | String | 否 | 表单字段查询条件 JSON 字符串 | `JSON.stringify({ textField_xxx: '值' })` |
 
 **请求示例**：
 
@@ -625,13 +631,13 @@ this.utils.yida.getProcessInstanceIds({
 
 ### getProcessInstanceById
 
-**描述**：根据实例 ID 获取流程实例详情
+**描述**：根据实例 ID 获取流程实例详情。
 
 **参数**：
 
 | 参数名 | 类型 | 是否必填 | 描述 | 示例 |
 | :--- | :--- | :--- | :--- | :--- |
-| processInstanceId | String | 是 | 流程实例ID | `f30233fb-xxx-530` |
+| processInstanceId | String | 是 | 流程实例 ID | `f30233fb-xxx-530` |
 
 **请求示例**：
 
@@ -645,430 +651,10 @@ this.utils.yida.getProcessInstanceById({
 });
 ```
 
-
 ---
 
-## 工具类 API
-
-宜搭提供了很多内置的工具类函数，帮助用户更好地实现一些常用功能。
-
-### dialog
-
-**描述**：弹出对话框，用户需要手动关闭。底层采用 Fusion 组件实现，支持配置所有 Dialog 组件属性。
-
-**参数**：
-
-| 参数名 | 类型 | 默认值 | 说明 |
-| :--- | :--- | :--- | :--- |
-| type | String | `'alert'` | 对话框类型：`alert` / `confirm` / `show` |
-| title | String | - | 对话框标题 |
-| content | String \| ReactNode | - | 内容，可传入 HTML/JSX 实现复杂布局 |
-| hasMask | Boolean | `true` | 是否有遮罩 |
-| footer | Boolean | `true` | 是否有底部操作按钮 |
-| footerAlign | String | `'right'` | 底部操作对齐方向：`left` / `center` / `right` |
-| footerActions | Array | - | 底部操作类型和顺序，如 `['cancel', 'ok']` / `['ok']` / `['cancel']` |
-| onOk | Function | - | 点击确定的回调函数 |
-| onCancel | Function | - | 点击取消的回调函数 |
-
-**请求示例**：
-
-```javascript
-export function popDialog() {
-  this.utils.dialog({
-    type: 'confirm',
-    title: '确认操作',
-    content: '确定要执行此操作吗？',
-    onOk: () => {
-      console.log('点击了确定');
-    },
-    onCancel: () => {
-      console.log('点击了取消');
-    },
-  });
-}
-
-// 支持手动关闭对话框
-export function closeDialog() {
-  const dialog = this.utils.dialog({
-    title: '处理中',
-    content: '请稍候...',
-  });
-  
-  // 3秒后自动关闭
-  setTimeout(() => dialog.hide(), 3000);
-}
-```
-
----
-
-### formatter
-
-**描述**：常用的格式化函数，支持日期、金额、手机号、银行卡号等格式转换。
-
-**参数**：
-
-| 参数名 | 类型 | 是否必填 | 说明 |
-| :--- | :--- | :--- | :--- |
-| type | String | 是 | 格式化类型：`date` / `money` / `cnmobile` / `card` |
-| value | String \| Number \| Date | 是 | 待格式化的值 |
-| format | String | 条件必填 | 日期格式模板（仅 type=date 时必填） |
-
-**常用格式化类型**：
-
-| 类型 | 示例 | 输出 |
-| :--- | :--- | :--- |
-| `date` | `formatter('date', new Date(), 'YYYY-MM-DD')` | `2022-01-29` |
-| `date` | `formatter('date', new Date(), 'YYYY/MM/DD')` | `2022/01/29` |
-| `date` | `formatter('date', new Date(), 'YYYY-MM-DD HH:mm:ss')` | `2022-01-29 13:01:02` |
-| `money` | `formatter('money', '10000.99', ', ')` | `10, 000.99` |
-| `cnmobile` | `formatter('cnmobile', '+8615652988282')` | `+86 1565 2988 282` |
-| `card` | `formatter('card', '1565298828212233')` | `1565 2988 2821 2233` |
-
-**请求示例**：
-
-```javascript
-export function format() {
-  // 格式化日期
-  const date1 = this.utils.formatter('date', new Date(), 'YYYY-MM-DD');
-  const date2 = this.utils.formatter('date', new Date(), 'YYYY/MM/DD');
-  const dateTime = this.utils.formatter('date', new Date(), 'YYYY-MM-DD HH:mm:ss');
-
-  // 格式化金额
-  const money = this.utils.formatter('money', '10000.99', ', ');
-
-  // 格式化手机号
-  const phone = this.utils.formatter('cnmobile', '+8615652988282');
-
-  // 格式化银行卡号
-  const card = this.utils.formatter('card', '1565298828212233');
-}
-```
-
----
-
-### getDateTimeRange
-
-**描述**：获取当前或指定日期的开始/结束区间时间戳。
-
-**参数**：
-
-| 参数名 | 类型 | 默认值 | 说明 |
-| :--- | :--- | :--- | :--- |
-| when | Number \| Date | `new Date()` | 指定日期，支持时间戳或 Date 对象 |
-| type | String | `'day'` | 区间类型：`year` / `month` / `week` / `day` / `date` / `hour` / `minute` / `second` |
-
-**返回值**：`[开始时间戳, 结束时间戳]` 数组
-
-**请求示例**：
-
-```javascript
-export function search() {
-  // 获取当天的开始和结束时间戳
-  const [dayStart, dayEnd] = this.utils.getDateTimeRange();
-  console.log(`当天范围: ${dayStart} ~ ${dayEnd}`);
-
-  // 获取当月的开始和结束时间戳
-  const [monthStart, monthEnd] = this.utils.getDateTimeRange(new Date(), 'month');
-  console.log(`当月范围: ${monthStart} ~ ${monthEnd}`);
-}
-```
-
----
-
-### getLocale
-
-**描述**：获取当前页面的语言环境。
-
-**返回值**：`String` - 语言代码，如 `zh_CN`、`en_US`
-
-**请求示例**：
-
-```javascript
-export function locale() {
-  const locale = this.utils.getLocale();
-  console.log(`当前语言: ${locale}`); // 输出：当前语言: zh_CN
-}
-```
-
----
-
-### getLoginUserId
-
-**描述**：获取当前登录用户的 ID。
-
-**返回值**：`String` - 用户 ID
-
-**请求示例**：
-
-```javascript
-export function getUserInfo() {
-  const userId = this.utils.getLoginUserId();
-  console.log(`用户ID: ${userId}`); // 输出：用户ID: 43314767738888
-}
-```
-
----
-
-### getLoginUserName
-
-**描述**：获取当前登录用户的名称。
-
-**返回值**：`String` - 用户名称
-
-**请求示例**：
-
-```javascript
-export function getUserInfo() {
-  const userName = this.utils.getLoginUserName();
-  console.log(`用户名: ${userName}`); // 输出：用户名: 韩火火
-}
-```
-
----
-
-### isMobile
-
-**描述**：判断当前访问环境是否是移动端。
-
-**返回值**：`Boolean` - `true` 表示移动端，`false` 表示 PC 端
-
-**请求示例**：
-
-```javascript
-export function someFunctionName() {
-  if (this.utils.isMobile()) {
-    console.log('当前是移动端');
-  } else {
-    console.log('当前是 PC 端');
-  }
-}
-```
-
----
-
-### isSubmissionPage
-
-**描述**：判断当前页面是否是数据提交页面。
-
-**返回值**：`Boolean`
-
-**请求示例**：
-
-```javascript
-export function someFunctionName() {
-  console.log('是否提交页面:', this.utils.isSubmissionPage());
-}
-```
-
----
-
-### isViewPage
-
-**描述**：判断当前页面是否是数据查看页面。
-
-**返回值**：`Boolean`
-
-**请求示例**：
-
-```javascript
-export function someFunctionName() {
-  console.log('是否查看页面:', this.utils.isViewPage());
-}
-```
-
----
-
-### loadScript
-
-**描述**：动态加载远程 JavaScript 脚本。
-
-**参数**：
-
-| 参数名 | 类型 | 是否必填 | 说明 |
-| :--- | :--- | :--- | :--- |
-| url | String | 是 | 脚本 URL 地址 |
-
-**返回值**：`Promise` - 加载完成后 resolve
-
-**请求示例**：
-
-```javascript
-export function didMount() {
-  this.utils.loadScript('https://g.alicdn.com/code/lib/qrcodejs/1.0.0/qrcode.min.js')
-    .then(() => {
-      const qrcode = new QRCode(document.getElementById('qrcode'), {
-        text: 'https://www.aliwork.com',
-        width: 128,
-        height: 128,
-        colorDark: '#000000',
-        colorLight: '#ffffff',
-        correctLevel: QRCode.CorrectLevel.H,
-      });
-    });
-}
-```
-
----
-
-### openPage
-
-**描述**：打开新页面。在钉钉环境下会使用钉钉 API 打开，体验更友好。
-
-**参数**：
-
-| 参数名 | 类型 | 是否必填 | 说明 |
-| :--- | :--- | :--- | :--- |
-| url | String | 是 | 页面地址，支持相对路径或绝对路径 |
-
-**请求示例**：
-
-```javascript
-export function someFunctionName() {
-  // 打开应用内页面
-  this.utils.openPage('/workbench');
-  
-  // 打开外部链接
-  this.utils.openPage('https://www.dingtalk.com');
-}
-```
-
----
-
-### router.push
-
-**描述**：页面路由跳转工具。支持两种常见方式：1.跳转到完整 URL，2.跳转到同一应用内的表单页或自定义页。
-
-参数说明：
-
-| 参数位置 | 说明                                              |
-| :------- | :------------------------------------------------ |
-| 参数 1   | 完整 URL，或同应用内页面 ID                       |
-| 参数 2   | 携带的跳转参数对象                                |
-| 参数 3   | 是否新开页面，`true` 为新开，`false` 为当前页跳转 |
-| 参数 4   | 是否是外部网址，仅在传完整 URL 时使用             |
-
-用法一：跳转完整 URL
-
-```javascript
-/**
- * 参数1：完整 url
- * 参数2：携带跳转参数
- * 参数3：是否新页面打开，true / false
- * 参数4：是否是网址
- */
-this.utils.router.push('https://yeyi...', {}, true, true);
-```
-
-用法二：跳转同应用内页面
-
-```javascript
-/**
- * 参数1：表单页面 ID，必须是同一个应用内
- * 参数2：携带跳转参数
- * 参数3：是否新页面打开，true / false
- */
-this.utils.router.push('FORM-WC96669...', {}, true);
-```
-
-推荐写法：
-
-```javascript
-// 同应用内跳转到后台管理页，当前页打开
-this.utils.router.push('FORM-XXX', {
-  isRenderNav: false,
-  corpid: 'dingxxxxxxxx'
-}, false);
-
-// 跳转外部网址，当前页打开
-this.utils.router.push('https://example.com', {}, false, true);
-```
-
-使用建议：
-
-- 管理系统内部页面切换，优先使用 `false`，避免新开页面。
-- 当跳转目标是同应用内的自定义页或表单页时，优先传页面 ID，不要手拼完整 URL。
-- 当跳转目标是外部网址时，第四个参数传 `true`，明确告诉路由工具这是一个网址。
-
----
-
-### previewImage
-
-**描述**：图片预览，支持手势缩放、滑动切换。
-
-**参数**：
-
-| 参数名 | 类型 | 是否必填 | 说明 |
-| :--- | :--- | :--- | :--- |
-| current | String | 是 | 当前预览图片的 URL |
-| urls | Array | 否 | 图片 URL 列表（多图预览时使用） |
-
-**请求示例**：
-
-```javascript
-export function previewImg() {
-  // 单图预览
-  this.utils.previewImage({
-    current: 'https://img.alicdn.com/tfs/TB1xxx.png',
-  });
-  
-  // 多图预览
-  this.utils.previewImage({
-    current: 'https://img.alicdn.com/tfs/TB1xxx.png',
-    urls: [
-      'https://img.alicdn.com/tfs/TB1xxx.png',
-      'https://img.alicdn.com/tfs/TB2xxx.png',
-      'https://img.alicdn.com/tfs/TB3xxx.png',
-    ],
-  });
-}
-```
-
----
-
-### toast
-
-**描述**：信息提醒，比 Dialog 更轻量，自动消失。
-
-**参数**：
-
-| 参数名 | 类型 | 默认值 | 说明 |
-| :--- | :--- | :--- | :--- |
-| type | String | `'notice'` | 类型：`success` / `warning` / `error` / `notice` / `help` / `loading` |
-| title | String | - | 提示内容 |
-| size | String | `'medium'` | 尺寸：`medium` / `large` |
-| duration | Number | - | 显示时长（毫秒），`loading` 类型时无效 |
-
-**返回值**：`Function` - 关闭方法（`loading` 类型时返回）
-
-**请求示例**：
-
-```javascript
-export function popToast() {
-  // 成功提示
-  this.utils.toast({
-    title: '操作成功',
-    type: 'success',
-    size: 'large',
-  });
-}
-
-// loading 提示（需手动关闭）
-export function showLoadingToast() {
-  const close = this.utils.toast({
-    title: '加载中...',
-    type: 'loading',
-    size: 'large',
-  });
-  
-  // 3秒后关闭
-  setTimeout(close, 3000);
-}
-
-// 错误提示
-export function showError() {
-  this.utils.toast({
-    title: '操作失败，请重试',
-    type: 'error',
-    duration: 3000,
-  });
-}
+## 使用建议
+
+- 当问题包含“表单实例”“流程实例”“跨表单查询”“流程发起”等关键词时，优先查本文件。
+- 当问题包含“页面状态”“按钮点击”“组件赋值”“弹窗”“路由跳转”等关键词时，优先查 [yida-js-api.md](./yida-js-api.md)。
+- 若同时需要“查询数据 + 更新页面组件”，可先在本文件定位数据接口，再到 `yida-js-api.md` 查组件 API。
